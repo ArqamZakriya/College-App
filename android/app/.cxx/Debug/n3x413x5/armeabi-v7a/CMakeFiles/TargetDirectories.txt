@@ -1,0 +1,2 @@
+C:/Users/arqam/Desktop/college_app/android/app/.cxx/Debug/n3x413x5/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/arqam/Desktop/college_app/android/app/.cxx/Debug/n3x413x5/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,8 @@
+{
+    "cmake.configureOnOpen": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "git.decorations.enabled": true,
+    "git.enabled": false,
+    "cmake.sourceDirectory": "C:/flutter_projects/college_app/linux",
+    "java.compile.nullAnalysis.mode": "automatic"
+}

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>College App Admin Panel</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-storage-compat.js"></script>
+  </head>
+  <body>
+    <div id="login-container" class="login-container">
+      <div class="login-card">
+        <div class="login-logo">
+          <i class="fas fa-university"></i>
+          <h1>College Admin</h1>
+        </div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <div class="input-with-icon">
+              <i class="fas fa-envelope"></i>
+              <input
+                type="email"
+                id="email"
+                placeholder="admin@college.edu"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          </div>
+          <button type="submit" class="login-btn">
+            <span class="btn-text">Login</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+          <p id="login-error" class="error-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <div id="app-container" class="app-container hidden">
+      <!-- Drawer Navigation -->
+      <nav id="drawer" class="drawer">
+        <div class="logo-container">
+          <i class="fas fa-university logo-icon"></i>
+          <h2>College Admin</h2>
+        </div>
+        <ul class="nav-menu">
+          <li class="nav-item active" data-page="dashboard">
+            <i class="fas fa-chart-line icon"></i>
+            <span class="label">Dashboard</span>
+          </li>
+          <li class="nav-item" data-page="colleges">
+            <i class="fas fa-school icon"></i>
+            <span class="label">Colleges</span>
+          </li>
+          <li class="nav-item" data-page="students">
+            <i class="fas fa-user-graduate icon"></i>
+            <span class="label">Students</span>
+          </li>
+          <li class="nav-item" data-page="faculty">
+            <i class="fas fa-chalkboard-teacher icon"></i>
+            <span class="label">Faculty</span>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <button id="logout-btn" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Overlay for drawer on mobile -->
+      <div id="drawer-overlay" class="drawer-overlay"></div>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+          <div class="menu-toggle">
+            <button id="drawer-toggle" aria-label="Toggle menu">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+          <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" placeholder="Search..." class="search-input" />
+          </div>
+          <div class="user-info">
+            <div class="user-details">
+              <span id="admin-name">Admin</span>
+              <span class="user-role">Super Admin</span>
+            </div>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <!-- Content Pages -->
+        <div class="content-container">
+          <!-- Dashboard Page -->
+          <div class="content-page active" id="dashboard-page">
+            <div class="page-header">
+              <h1>Dashboard</h1>
+              <div class="last-updated">
+                Last updated: <span id="last-updated-time">Just now</span>
+              </div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-school"></i>
+                </div>
+                <div class="stat-info">
+                  <h3>Total Colleges</h3>
+                  <p class="stat-value" id="total-colleges">0</p>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>2.5% from last month</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="stat-info">
+                  <h3>Total Students</h3>
+                  <p class="stat-value" id="total-students">0</p>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>5.1% from last month</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stat-info">
+                  <h3>Total Faculty</h3>
+                  <p class="stat-value" id="total-faculty">0</p>
+                  <div class="stat-trend down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>1.2% from last month</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-bullhorn"></i>
+                </div>
+                <div class="stat-info">
+                  <h3>Active Notices</h3>
+                  <p class="stat-value" id="active-notices">0</p>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>3.7% from last month</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="recent-activity">
+              <div class="section-header">
+                <h2>Recent Activity</h2>
+                <button class="view-all-btn">View All</button>
+              </div>
+              <div class="activity-table-container">
+                <table id="activity-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Action</th>
+                      <th>Time</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activity-data">
+                    <!-- Activity data will be populated here -->
+                    <tr class="loading-row">
+                      <td colspan="4">
+                        <div class="loading-spinner"></div>
+                        Loading activities...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colleges Page -->
+          <div class="content-page" id="colleges-page">
+            <div class="page-header">
+              <h1>Colleges</h1>
+              <button id="add-college-btn" class="action-btn primary">
+                <i class="fas fa-plus"></i>
+                Add New College
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table" id="colleges-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Established</th>
+                    <th>Faculty</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="colleges-data">
+                  <tr class="loading-row">
+                    <td colspan="7">
+                      <div class="loading-spinner"></div>
+                      Loading colleges...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Students Page -->
+          <div class="content-page" id="students-page">
+            <div class="page-header">
+              <h1>Students</h1>
+              <div class="page-actions">
+                <button id="add-student-btn" class="action-btn primary">
+                  <i class="fas fa-plus"></i>
+                  Add New Student
+                </button>
+                <div class="filter-container">
+                  <label for="college-filter-students"
+                    >Filter by College:</label
+                  >
+                  <select id="college-filter-students" class="filter-select">
+                    <option value="">All Colleges</option>
+                    <!-- College options will be populated here -->
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table" id="students-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>College</th>
+                    <th>Department</th>
+                    <th>Year</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="students-data">
+                  <tr class="loading-row">
+                    <td colspan="8">
+                      <div class="loading-spinner"></div>
+                      Loading students...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Faculty Page -->
+          <div class="content-page" id="faculty-page">
+            <div class="page-header">
+              <h1>Faculty</h1>
+              <div class="page-actions">
+                <button id="add-faculty-btn" class="action-btn primary">
+                  <i class="fas fa-plus"></i>
+                  Add New Faculty
+                </button>
+                <div class="filter-container">
+                  <label for="college-filter-faculty">Filter by College:</label>
+                  <select id="college-filter-faculty" class="filter-select">
+                    <option value="">All Colleges</option>
+                    <!-- College options will be populated here -->
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table" id="faculty-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>College</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="faculty-data">
+                  <tr class="loading-row">
+                    <td colspan="8">
+                      <div class="loading-spinner"></div>
+                      Loading faculty...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Add College Modal -->
+    <div id="add-college-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Add New College</h2>
+        <form id="add-college-form">
+          <div class="form-group">
+            <label for="college-name">College Name</label>
+            <input
+              type="text"
+              id="college-name"
+              placeholder="Enter college name"
+              required
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="college-location">Location</label>
+              <input
+                type="text"
+                id="college-location"
+                placeholder="Enter location"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="college-established">Established Year</label>
+              <input
+                type="number"
+                id="college-established"
+                placeholder="YYYY"
+                min="1800"
+                max="2025"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="college-website">Website (Optional)</label>
+            <input
+              type="url"
+              id="college-website"
+              placeholder="https://example.com"
+            />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Add College</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit College Modal -->
+    <div id="edit-college-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Edit College</h2>
+        <form id="edit-college-form">
+          <input type="hidden" id="edit-college-id" />
+          <div class="form-group">
+            <label for="edit-college-name">College Name</label>
+            <input
+              type="text"
+              id="edit-college-name"
+              placeholder="Enter college name"
+              required
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-college-location">Location</label>
+              <input
+                type="text"
+                id="edit-college-location"
+                placeholder="Enter location"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit-college-established">Established Year</label>
+              <input
+                type="number"
+                id="edit-college-established"
+                placeholder="YYYY"
+                min="1800"
+                max="2025"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-college-website">Website (Optional)</label>
+            <input
+              type="url"
+              id="edit-college-website"
+              placeholder="https://example.com"
+            />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Update College</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="add-student-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Add New Student</h2>
+        <form id="add-student-form">
+          <div class="form-group">
+            <label for="student-name">Full Name</label>
+            <input type="text" id="student-name" required />
+          </div>
+
+          <div class="form-group">
+            <label for="student-email">Email</label>
+            <input type="email" id="student-email" required />
+          </div>
+
+          <!-- In your add-student-form -->
+          <div class="form-group">
+            <label for="student-college">College</label>
+            <select id="student-college" required>
+              <option value="">Select College</option>
+              <!-- Options will be populated by updateCollegeOptions() -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="student-branch">Branch</label>
+            <select id="student-branch" required>
+              <option value="">Select Branch</option>
+              <option value="CSE">Computer Science</option>
+              <option value="AIML">AI & ML</option>
+              <option value="ECE">Electronics</option>
+              <option value="ME">Mechanical</option>
+              <option value="CE">Civil</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Add Student</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Faculty Modal -->
+    <div id="add-faculty-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Add New Faculty</h2>
+        <form id="add-faculty-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="faculty-name">Full Name</label>
+              <input
+                type="text"
+                id="faculty-name"
+                placeholder="Enter faculty name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="faculty-email">Email</label>
+              <input
+                type="email"
+                id="faculty-email"
+                placeholder="faculty@example.com"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="faculty-college">College</label>
+              <select id="faculty-college" required>
+                <option value="">Select College</option>
+                <!-- College options will be populated here -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="faculty-department">Department</label>
+              <input
+                type="text"
+                id="faculty-department"
+                placeholder="Enter department"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="faculty-position">Position</label>
+            <select id="faculty-position" required>
+              <option value="Professor">Professor</option>
+              <option value="Associate Professor">Associate Professor</option>
+              <option value="Assistant Professor">Assistant Professor</option>
+              <option value="Lecturer">Lecturer</option>
+              <option value="Adjunct Faculty">Adjunct Faculty</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Add Faculty</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Faculty Modal -->
+    <div id="edit-faculty-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Edit Faculty</h2>
+        <form id="edit-faculty-form">
+          <input type="hidden" id="edit-faculty-id" />
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-faculty-name">Full Name</label>
+              <input
+                type="text"
+                id="edit-faculty-name"
+                placeholder="Enter faculty name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit-faculty-email">Email</label>
+              <input
+                type="email"
+                id="edit-faculty-email"
+                placeholder="faculty@example.com"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-faculty-college">College</label>
+              <select id="edit-faculty-college" required>
+                <option value="">Select College</option>
+                <!-- College options will be populated here -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-faculty-department">Department</label>
+              <input
+                type="text"
+                id="edit-faculty-department"
+                placeholder="Enter department"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-faculty-position">Position</label>
+            <select id="edit-faculty-position" required>
+              <option value="Professor">Professor</option>
+              <option value="Associate Professor">Associate Professor</option>
+              <option value="Assistant Professor">Assistant Professor</option>
+              <option value="Lecturer">Lecturer</option>
+              <option value="Adjunct Faculty">Adjunct Faculty</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Update Faculty</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner large"></div>
+        <p>Processing your request...</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
