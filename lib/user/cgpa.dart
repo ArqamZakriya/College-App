@@ -1,5 +1,6 @@
+// ignore: unused_import
 import 'dart:io';
-import 'package:college_app/user/u_home.dart';
+import 'package:college_app/user/user_home.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -22,18 +23,30 @@ class WebViewExample extends StatefulWidget {
   const WebViewExample({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _WebViewExampleState createState() => _WebViewExampleState();
+  State<WebViewExample> createState() => _WebViewExampleState();
 }
 
 class _WebViewExampleState extends State<WebViewExample> {
+  late final WebViewController _controller;
+
   @override
   void initState() {
     super.initState();
-    // Enable hybrid composition on Android.
-    if (Platform.isAndroid) {
-      WebView.platform = SurfaceAndroidWebView();
-    }
+    
+    // Create the controller
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar if needed
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onWebResourceError: (WebResourceError error) {},
+        ),
+      )
+      ..loadRequest(Uri.parse('https://www.vtulife.in/vtu-sgpa-cgpa-calculator/'));
   }
 
   @override
@@ -51,11 +64,7 @@ class _WebViewExampleState extends State<WebViewExample> {
         ),
         title: const Text('CGPA/SGPA - Page'),
       ),
-      body: const WebView(
-        initialUrl: 'https://www.vtulife.in/vtu-sgpa-cgpa-calculator/',
-        javascriptMode: JavascriptMode.unrestricted,
-      ),
+      body: WebViewWidget(controller: _controller),
     );
   }
 }
-

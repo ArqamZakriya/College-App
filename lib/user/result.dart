@@ -1,5 +1,7 @@
+// ignore: unused_import
 import 'dart:io';
-import 'package:college_app/user/u_home.dart';
+// import 'package:college_app/widgets/bottom_navigation.dart';
+import 'package:college_app/user/user_home.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -30,13 +32,30 @@ class WebViewExample extends StatefulWidget {
 }
 
 class WebViewExampleState extends State<WebViewExample> {
+  late final WebViewController controller;
+
   @override
   void initState() {
     super.initState();
-    // Enable hybrid composition on Android.
-    if (Platform.isAndroid) {
-      WebView.platform = SurfaceAndroidWebView();
-    }
+    
+    // Initialize the WebViewController
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar if needed
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) {
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse('https://results.vtu.ac.in/'));
   }
 
   @override
@@ -54,10 +73,7 @@ class WebViewExampleState extends State<WebViewExample> {
         ),
         title: const Text('Result Page'),
       ),
-      body: const WebView(
-        initialUrl: 'https://results.vtu.ac.in/',
-        javascriptMode: JavascriptMode.unrestricted,
-      ),
+      body: WebViewWidget(controller: controller),
     );
   }
 }

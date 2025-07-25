@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College App Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <div id="login-container" class="login-container">
+        <div class="login-card">
+            <h2>College App Admin</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <p id="login-error" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <h2>College App Admin</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span class="label">Dashboard</span>
+                </li>
+                <li class="nav-item" data-page="students">
+                    <span class="icon">🧑‍🎓</span>
+                    <span class="label">Students</span>
+                </li>
+                <li class="nav-item" data-page="faculty">
+                    <span class="icon">👩‍🏫</span>
+                    <span class="label">Faculty</span>
+                </li>
+                <li class="nav-item" data-page="notices">
+                    <span class="icon">📢</span>
+                    <span class="label">Notices</span>
+                </li>
+                <li class="nav-item" data-page="events">
+                    <span class="icon">📆</span>
+                    <span class="label">Events</span>
+                </li>
+                <li class="nav-item" data-page="settings">
+                    <span class="icon">⚙️</span>
+                    <span class="label">Settings</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logout-btn">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="search-container">
+                    <input type="text" placeholder="Search..." class="search-input">
+                </div>
+                <div class="user-info">
+                    <span id="admin-name">Admin</span>
+                    <div class="avatar">A</div>
+                </div>
+            </header>
+
+            <!-- Content Pages -->
+            <div class="content-container">
+                <!-- Dashboard Page -->
+                <div class="content-page active" id="dashboard-page">
+                    <h1>Dashboard</h1>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Students</h3>
+                            <p class="stat-value" id="total-students">--</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Faculty</h3>
+                            <p class="stat-value" id="total-faculty">--</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Active Notices</h3>
+                            <p class="stat-value" id="active-notices">--</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Upcoming Events</h3>
+                            <p class="stat-value" id="upcoming-events">--</p>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h2>Recent Activity</h2>
+                        <table id="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-data">
+                                <!-- Activity data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Students Page -->
+                <div class="content-page" id="students-page">
+                    <h1>Students</h1>
+                    <div class="action-bar">
+                        <button id="add-student-btn" class="action-btn">Add New Student</button>
+                    </div>
+                    <table class="data-table" id="students-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-data">
+                            <!-- Student data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Faculty Page -->
+                <div class="content-page" id="faculty-page">
+                    <h1>Faculty</h1>
+                    <div class="action-bar">
+                        <button id="add-faculty-btn" class="action-btn">Add New Faculty</button>
+                    </div>
+                    <table class="data-table" id="faculty-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Position</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="faculty-data">
+                            <!-- Faculty data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Notices Page -->
+                <div class="content-page" id="notices-page">
+                    <h1>Notices</h1>
+                    <div class="action-bar">
+                        <button id="add-notice-btn" class="action-btn">Add New Notice</button>
+                    </div>
+                    <div id="notices-list" class="notices-container">
+                        <!-- Notices will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Events Page -->
+                <div class="content-page" id="events-page">
+                    <h1>Events</h1>
+                    <div class="action-bar">
+                        <button id="add-event-btn" class="action-btn">Add New Event</button>
+                    </div>
+                    <div id="events-list" class="events-container">
+                        <!-- Events will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div class="content-page" id="settings-page">
+                    <h1>Settings</h1>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label for="college-name">College Name</label>
+                            <input type="text" id="college-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-email">Admin Email</label>
+                            <input type="email" id="admin-email">
+                        </div>
+                        <div class="form-group">
+                            <label for="notification-settings">Notification Settings</label>
+                            <select id="notification-settings">
+                                <option value="all">All Notifications</option>
+                                <option value="important">Important Only</option>
+                                <option value="none">None</option>
+                            </select>
+                        </div>
+                        <button id="save-settings" class="action-btn">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="add-student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Add New Student</h2>
+            <form id="add-student-form">
+                <div class="form-group">
+                    <label for="student-name">Full Name</label>
+                    <input type="text" id="student-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-email">Email</label>
+                    <input type="email" id="student-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-department">Department</label>
+                    <input type="text" id="student-department" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-year">Year</label>
+                    <select id="student-year" required>
+                        <option value="1">First Year</option>
+                        <option value="2">Second Year</option>
+                        <option value="3">Third Year</option>
+                        <option value="4">Fourth Year</option>
+                    </select>
+                </div>
+                <button type="submit" class="action-btn">Add Student</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
